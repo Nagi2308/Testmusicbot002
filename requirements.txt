@@ -20,7 +20,8 @@ unidecode
 python-dotenv  
 pyyaml  
 requests  
-speedtest-cli  
+speedtest-cli
+pip install pyrogram tgcrypto
 spotipy  
 tgcrypto  
 urllib3  
