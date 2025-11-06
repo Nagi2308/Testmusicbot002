@@ -1,4 +1,4 @@
-usedeep-translator  
+deep-translator  
 openai  
 aiofiles  
 aiohttp  
