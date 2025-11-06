@@ -4,10 +4,10 @@ FROM nikolaik/python-nodejs:python3.10-nodejs19
 # Set working directory
 WORKDIR /app
 
-# Copy dependency files first for build cache
+# Copy requirements first for caching
 COPY requirements.txt .
 
-# Install system dependencies (FFmpeg etc.)
+# Install system dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     ffmpeg \
@@ -18,15 +18,18 @@ RUN apt-get update && \
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copy the full project into the container
+# ✅ Correct PyTgCalls install
+RUN pip install --no-cache-dir py-tgcalls==2.2.8
+
+# Copy all project files
 COPY . .
 
-# Expose port (optional if your bot runs a web server)
+# Optional: expose web port if you have Flask or web status page
 EXPOSE 8080
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
-# Start your bot
+# Start command for Render
 CMD ["bash", "start"]
