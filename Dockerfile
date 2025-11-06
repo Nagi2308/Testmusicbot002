@@ -1,5 +1,5 @@
-# Base image with Python 3.10 + Node.js 19
-FROM nikolaik/python-nodejs:python3.10-nodejs19
+# Use combined Python + NodeJS image
+FROM nikolaik/python-nodejs:python3.10-nodejs20-slim
 
 # Set working directory
 WORKDIR /app
@@ -7,29 +7,30 @@ WORKDIR /app
 # Copy requirements first for caching
 COPY requirements.txt .
 
-# Install system dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    ffmpeg \
-    git \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+# Fix outdated APT sources and install dependencies
+RUN sed -i 's|deb.debian.org|archive.debian.org|g' /etc/apt/sources.list \
+ && sed -i 's|security.debian.org|archive.debian.org|g' /etc/apt/sources.list \
+ && apt-get clean && apt-get update -o Acquire::Check-Valid-Until=false -o Acquire::AllowInsecureRepositories=true \
+ && apt-get install -y --no-install-recommends \
+      ffmpeg \
+      git \
+      curl \
+ && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip and install dependencies
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+# Upgrade pip & install dependencies
+RUN pip install --no-cache-dir --upgrade pip \
+ && pip install --no-cache-dir -r requirements.txt
 
-# ✅ Correct PyTgCalls install
-RUN pip install --no-cache-dir py-tgcalls==2.2.8
-
-# Copy all project files
+# Copy rest of the project
 COPY . .
 
-# Optional: expose web port if you have Flask or web status page
+# Set environment variables (optional)
+ENV PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    NODE_ENV=production
+
+# Expose your app port (if bot uses webhooks)
 EXPOSE 8080
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
-
-# Start command for Render
-CMD ["bash", "start"]
+# Start command
+CMD ["python3", "main.py"]
