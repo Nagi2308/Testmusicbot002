@@ -21,7 +21,8 @@ python-dotenv
 pyyaml  
 requests  
 speedtest-cli
-pip install pyrogram tgcrypto
+pyrogram 
+tgcrypto
 spotipy  
 tgcrypto  
 urllib3  
