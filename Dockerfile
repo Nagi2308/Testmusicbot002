@@ -1,21 +1,30 @@
-# Use a lightweight base image with Python + Node.js
-FROM nikolaik/python-nodejs:python3.10-nodejs19
+# Use an updated Python + Node.js image (Debian Bullseye base)
+FROM nikolaik/python-nodejs:python3.10-nodejs20-bullseye
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies (ffmpeg is often required for PyTgCalls)
+# Copy all project files
+COPY . .
+
+# Install system dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends ffmpeg && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy project files into container
-COPY . .
+# Upgrade pip & install dependencies
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -U -r requirements.txt
+# Optional: for PyTgCalls stability
+RUN pip install pytgcalls==0.9.0
 
-# Render automatically runs CMD, not bash scripts — define explicitly
-# You can replace 'start.py' with your actual bot starter script.
-CMD ["python3", "start.py"]
+# Expose bot port (if any webhooks)
+EXPOSE 8080
+
+# Set environment (important for Render/Heroku)
+ENV PYTHONUNBUFFERED=1
+
+# Start the bot
+CMD ["python3", "main.py"]
